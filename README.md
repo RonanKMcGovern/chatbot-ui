@@ -1,14 +1,13 @@
-# Chatbot UI
+# Chatbot UI (Trelis Research Version)
 
-## News
+## About Trelis Research version of Chatbot UI
 
-Chatbot UI 2.0 is out as an updated, hosted product!
+This Chatbot UI is a fork of McKayWrigley's open source project, modified in two ways:
+1. Support for GPT-3.5-turbo-16k, GPT-4-turbo-128k, GPT-3.5-turbo-instruct
+1. Truncates (rather than omits) the earliest dialog item (whether user or assistant) to stay below the model's context length.
 
-Check out [Takeoff Chat](https://www.takeoffchat.com/).
-
-Open source version coming soon!
-
-## About
+The original repo ReadMe follows:
+---
 
 Chatbot UI is an open source chat UI for AI models.
 
@@ -33,7 +32,7 @@ Expect frequent improvements.
 
 Host your own live version of Chatbot UI with Vercel.
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fmckaywrigley%2Fchatbot-ui)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FTrelisResearch%2Fchatbot-ui)
 
 **Docker**
 
