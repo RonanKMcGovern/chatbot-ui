@@ -41,12 +41,24 @@ const handler = async (req: Request): Promise<Response> => {
 
     for (let i = messages.length - 1; i >= 0; i--) {
       const message = messages[i];
-      const tokens = encoding.encode(message.content);
+      let tokens = encoding.encode(message.content);
 
       if (tokenCount + tokens.length + 1000 > model.tokenLimit) {
-        break;
+        // Proportionally trim the message content until it fits
+        let proportionToTrim = (tokenCount + tokens.length + 1000 - model.tokenLimit) / tokens.length;
+        message.content = message.content.slice(Math.ceil(message.content.length * proportionToTrim));
+        tokens = encoding.encode(message.content);
+        // Fine-tuning: trim 500 characters at a time until it fits
+        while (tokenCount + tokens.length + 1000 > model.tokenLimit && message.content.length > 0) {
+          message.content = message.content.slice(500);
+          tokens = encoding.encode(message.content);
+        }
+        if (message.content.length === 0) {
+          break;  // if message is empty after trimming, stop processing
+        }
       }
       tokenCount += tokens.length;
+      // console.log(tokenCount);
       messagesToSend = [message, ...messagesToSend];
     }
 
