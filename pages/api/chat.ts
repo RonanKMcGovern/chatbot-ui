@@ -39,27 +39,37 @@ const handler = async (req: Request): Promise<Response> => {
     let tokenCount = prompt_tokens.length;
     let messagesToSend: Message[] = [];
 
+    // Assuming 4 characters per token
+    const averageCharsPerToken = 4;
+
     for (let i = messages.length - 1; i >= 0; i--) {
       const message = messages[i];
       let tokens = encoding.encode(message.content);
+      tokenCount += tokens.length;
 
-      if (tokenCount + tokens.length + 1000 > model.tokenLimit) {
-        // Proportionally trim the message content until it fits
-        let proportionToTrim = (tokenCount + tokens.length + 1000 - model.tokenLimit) / tokens.length;
-        message.content = message.content.slice(Math.ceil(message.content.length * proportionToTrim));
-        tokens = encoding.encode(message.content);
-        // Fine-tuning: trim 500 characters at a time until it fits
-        while (tokenCount + tokens.length + 1000 > model.tokenLimit && message.content.length > 0) {
-          message.content = message.content.slice(500);
+      if (tokenCount + 1000 > model.tokenLimit) {
+        // Calculate the number of tokens to trim
+        let excessTokens = tokenCount + 1000 - model.tokenLimit;
+        // Estimate the number of characters to trim
+        let charsToTrim = excessTokens * averageCharsPerToken;
+        
+        if (message.content.length > charsToTrim) {
+          // Trim the message content
+          message.content = message.content.slice(0, -charsToTrim);
+          // Re-encode to get the updated token count
           tokens = encoding.encode(message.content);
-        }
-        if (message.content.length === 0) {
-          break;  // if message is empty after trimming, stop processing
+          tokenCount = prompt_tokens.length + tokens.length;
+        } else {
+          // If the entire message needs to be trimmed, remove the message
+          messagesToSend.splice(i, 1);
+          tokenCount -= tokens.length;  // Adjust the token count
         }
       }
-      tokenCount += tokens.length;
-      // console.log(tokenCount);
-      messagesToSend = [message, ...messagesToSend];
+
+      // If the message is not removed, add it to the messages to send
+      if (messagesToSend.indexOf(message) === -1) {
+        messagesToSend = [message, ...messagesToSend];
+      }
     }
 
     encoding.free();
